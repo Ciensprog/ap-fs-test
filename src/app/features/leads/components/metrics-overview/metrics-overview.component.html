@@ -1,0 +1,187 @@
+<div class="metrics-container">
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon icon-blue">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      </div>
+      <div class="kpi-content">
+        <span class="kpi-label">Total de Leads</span>
+        <h3 class="kpi-value">
+          {{ loading ? "..." : (summary?.totalLeads ?? 0) }}
+        </h3>
+        <span class="kpi-subtext">Registrados en la plataforma</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon icon-emerald">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="12" y1="1" x2="12" y2="23" />
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+        </svg>
+      </div>
+      <div class="kpi-content">
+        <span class="kpi-label">Presupuesto Promedio</span>
+        <h3 class="kpi-value">
+          {{
+            loading
+              ? "..."
+              : (summary?.averageBudget ?? 0
+                | currency: "USD" : "symbol" : "1.0-0")
+          }}
+        </h3>
+        <span class="kpi-subtext">Capacidad de inversión promedio</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon icon-purple">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+          <polyline points="17 6 23 6 23 12" />
+        </svg>
+      </div>
+      <div class="kpi-content">
+        <span class="kpi-label">Tasa de Conversión</span>
+        <h3 class="kpi-value">
+          {{ loading ? "..." : (summary?.conversionRate ?? 0) + "%" }}
+        </h3>
+        <span class="kpi-subtext">Leads en estado Reservado</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon icon-amber">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+        </svg>
+      </div>
+      <div class="kpi-content">
+        <span class="kpi-label">Leads Reservados</span>
+        <h3 class="kpi-value">
+          {{ loading ? "..." : (summary?.reservedLeads ?? 0) }}
+        </h3>
+        <span class="kpi-subtext">Cierres de venta concretados</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="breakdown-grid" *ngIf="summary && !loading">
+    <div class="breakdown-card">
+      <h4 class="breakdown-title">
+        <span class="dot dot-indigo"></span> Distribución por Estado
+      </h4>
+      <div class="breakdown-list">
+        <div class="breakdown-item" *ngFor="let item of summary.byStatus">
+          <div class="item-header">
+            <span class="item-label">{{ item.label }}</span>
+            <span class="item-count"
+              >{{ item.count }} ({{
+                getPercentage(item.count, summary.totalLeads)
+              }}%)</span
+            >
+          </div>
+          <div class="progress-bar">
+            <div
+              class="progress-fill fill-indigo"
+              [style.width.%]="getPercentage(item.count, summary.totalLeads)"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="breakdown-card">
+      <h4 class="breakdown-title">
+        <span class="dot dot-teal"></span> Origines y Canales (Fuente)
+      </h4>
+      <div class="breakdown-list">
+        <div class="breakdown-item" *ngFor="let item of summary.bySource">
+          <div class="item-header">
+            <span class="item-label">{{ item.label }}</span>
+            <span class="item-count"
+              >{{ item.count }} ({{
+                getPercentage(item.count, summary.totalLeads)
+              }}%)</span
+            >
+          </div>
+          <div class="progress-bar">
+            <div
+              class="progress-fill fill-teal"
+              [style.width.%]="getPercentage(item.count, summary.totalLeads)"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="breakdown-card">
+      <h4 class="breakdown-title">
+        <span class="dot dot-rose"></span> Interés por Proyecto
+      </h4>
+      <div class="breakdown-list">
+        <div class="breakdown-item" *ngFor="let item of summary.byProject">
+          <div class="item-header">
+            <span class="item-label">{{ item.label }}</span>
+            <span class="item-count"
+              >{{ item.count }} ({{
+                getPercentage(item.count, summary.totalLeads)
+              }}%)</span
+            >
+          </div>
+          <div class="progress-bar">
+            <div
+              class="progress-fill fill-rose"
+              [style.width.%]="getPercentage(item.count, summary.totalLeads)"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

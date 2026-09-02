@@ -1,0 +1,194 @@
+<div class="table-card">
+  <div class="table-header-bar">
+    <div class="table-title">
+      <h3>Listado de Leads</h3>
+      <span class="count-badge" *ngIf="!loading"
+        >{{ totalLeads }} registros</span
+      >
+    </div>
+
+    <div class="limit-selector" *ngIf="!loading && !error">
+      <label>Mostrar:</label>
+      <select
+        [value]="limit"
+        (change)="onLimitSelect($event)"
+        class="limit-dropdown"
+      >
+        <option [value]="5">5 por pág.</option>
+        <option [value]="10">10 por pág.</option>
+        <option [value]="25">25 por pág.</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="state-container" *ngIf="loading">
+    <div class="spinner-large"></div>
+    <p>Cargando información de leads...</p>
+  </div>
+
+  <div class="state-container error-state" *ngIf="error && !loading">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="40"
+      height="40"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="8" x2="12" y2="12" />
+      <line x1="12" y1="16" x2="12.01" y2="16" />
+    </svg>
+    <p class="error-msg">{{ error }}</p>
+    <button class="btn btn-primary btn-sm" (click)="retry.emit()">
+      Reintentar
+    </button>
+  </div>
+
+  <div
+    class="state-container empty-state"
+    *ngIf="!loading && !error && leads.length === 0"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="48"
+      height="48"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="9" y1="15" x2="15" y2="15" />
+    </svg>
+    <p class="empty-title">No se encontraron leads</p>
+    <p class="empty-sub">
+      Intente ajustando los filtros o creando un nuevo registro.
+    </p>
+  </div>
+
+  <div class="table-responsive" *ngIf="!loading && !error && leads.length > 0">
+    <table class="leads-table">
+      <thead>
+        <tr>
+          <th>Prospecto</th>
+          <th>Contacto</th>
+          <th>Proyecto</th>
+          <th>Fuente</th>
+          <th class="sortable" (click)="toggleSort('budget')">
+            Presupuesto
+            <span class="sort-icon" *ngIf="sortBy === 'budget'">{{
+              order === "asc" ? "▲" : "▼"
+            }}</span>
+          </th>
+          <th>Estado Comercial</th>
+          <th class="sortable" (click)="toggleSort('createdAt')">
+            Fecha Registro
+            <span class="sort-icon" *ngIf="sortBy === 'createdAt'">{{
+              order === "asc" ? "▲" : "▼"
+            }}</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let lead of leads">
+          <td>
+            <div class="prospect-info">
+              <div class="avatar">{{ lead.name.charAt(0).toUpperCase() }}</div>
+              <span class="name">{{ lead.name }}</span>
+            </div>
+          </td>
+
+          <td>
+            <div class="contact-info">
+              <span class="email">{{ lead.email }}</span>
+              <span class="phone" *ngIf="lead.phone">{{ lead.phone }}</span>
+            </div>
+          </td>
+
+          <td>
+            <span class="project-tag">{{ lead.project }}</span>
+          </td>
+
+          <td>
+            <span class="source-badge">{{ lead.source }}</span>
+          </td>
+
+          <td>
+            <span class="budget-value">{{
+              lead.budget | currency: "USD" : "symbol" : "1.0-0"
+            }}</span>
+          </td>
+
+          <td>
+            <div class="status-cell">
+              <span
+                class="status-badge"
+                [ngClass]="getStatusClass(lead.status)"
+              >
+                {{ lead.status }}
+              </span>
+              <select
+                class="status-quick-select"
+                value=""
+                (change)="onStatusSelect(lead, $event)"
+                title="Cambiar estado comercial"
+              >
+                <option value="" disabled selected hidden>Cambiar...</option>
+                <option *ngFor="let st of statusOptions" [value]="st">
+                  {{ st }}
+                </option>
+              </select>
+            </div>
+          </td>
+
+          <td>
+            <span class="date-text">{{
+              lead.createdAt | date: "dd/MM/yyyy"
+            }}</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination-bar" *ngIf="!loading && !error && totalPages > 1">
+    <div class="page-info">
+      Página <strong>{{ currentPage }}</strong> de
+      <strong>{{ totalPages }}</strong>
+    </div>
+
+    <div class="pagination-controls">
+      <button
+        class="page-btn"
+        [disabled]="currentPage === 1"
+        (click)="onPageClick(currentPage - 1)"
+      >
+        Anterior
+      </button>
+
+      <button
+        *ngFor="let p of [].constructor(totalPages); let i = index"
+        class="page-number"
+        [class.active]="currentPage === i + 1"
+        (click)="onPageClick(i + 1)"
+      >
+        {{ i + 1 }}
+      </button>
+
+      <button
+        class="page-btn"
+        [disabled]="currentPage === totalPages"
+        (click)="onPageClick(currentPage + 1)"
+      >
+        Siguiente
+      </button>
+    </div>
+  </div>
+</div>
